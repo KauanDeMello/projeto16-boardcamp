@@ -39,3 +39,39 @@ export async function createRental(req, res) {
     res.status(500).send(err.message);
   }
 }
+
+export async function finishRental(req, res) {
+  const { id } = req.params;
+  const { pricePerDay, daysRented, rentDate } = res.locals;
+  let delayFee = null;
+
+  const difference = dayjs().diff(dayjs(rentDate), 'days');
+
+  if (difference > daysRented) {
+    delayFee = pricePerDay * (difference - daysRented);
+  }
+
+  try {
+    await db.query(
+      `
+      UPDATE rentals
+      SET "returnDate" = $1, "delayFee" = $2
+      WHERE id = $3;
+    `,
+      [dayjs().format('YYYY-MM-DD'), delayFee, id]
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}
+
+export async function deleteRental(req, res) {
+  const { id } = req.params
+  try {
+      await db.query(`DELETE FROM rentals WHERE id=$1`, [id])
+      res.sendStatus(200)
+  } catch (err) {
+      res.status(500).send(err.message)
+  }
+} 

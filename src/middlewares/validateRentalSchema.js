@@ -50,3 +50,42 @@ export default async function validateRental(schema) {
       }
     };
   }
+
+  export async function validateReturn(req, res, next) {
+    const { id } = req.params;
+  
+    try {
+      const existingRental = await db.query(
+        'SELECT * FROM rentals WHERE id = $1',
+        [id]
+      );
+  
+      if (existingRental.rowCount === 0) {
+        return res.status(404).send('O aluguel não foi encontrado.');
+      }
+  
+      const rental = existingRental.rows[0];
+  
+      if (rental.returnDate) {
+        return res.status(400).send('O aluguel já foi finalizado.');
+      }
+  
+      const { pricePerDay, daysRented, rentDate } = rental;
+  
+      const difference = dayjs().diff(dayjs(rentDate), 'days');
+      const delayDays = Math.max(difference - daysRented, 0);
+      const delayFee = pricePerDay * delayDays;
+  
+      const returnDate = dayjs().format('YYYY-MM-DD');
+  
+      req.returnData = {
+        id,
+        returnDate,
+        delayFee,
+      };
+  
+      next();
+    } catch (err) {
+      res.status(500).send(err.message);
+    }
+  }
