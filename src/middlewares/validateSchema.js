@@ -1,3 +1,6 @@
+import {db} from "../database/db.js"
+
+
 export default function validateGameSchema(schema) {
   return (req, res, next) => {
       const validation = schema.validate(req.body, { abortEarly: false })

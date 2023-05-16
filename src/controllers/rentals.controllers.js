@@ -24,3 +24,18 @@ export async function findAllRents(req, res) {
     res.status(500).send(err.message);
   }
 }
+
+export async function createRental(req, res) {
+  const { customerId, gameId, daysRented, rentDate, originalPrice } = req.rentalData;
+
+  try {
+    await db.query(
+      'INSERT INTO rentals ("customerId", "gameId", "daysRented", "rentDate", "originalPrice") VALUES ($1, $2, $3, $4, $5)',
+      [customerId, gameId, daysRented, rentDate, originalPrice]
+    );
+
+    res.sendStatus(201);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}

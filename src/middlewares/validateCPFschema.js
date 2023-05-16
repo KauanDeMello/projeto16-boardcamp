@@ -1,3 +1,6 @@
+import {db} from "../database/db.js"
+
+
 export default function validateCustomerSchema(schema) {
   return async (req, res, next) => {
     const validation = schema.validate(req.body, { abortEarly: false });
